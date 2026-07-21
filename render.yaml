@@ -1,7 +1,14 @@
 services:
+  - type: keyvalue
+    name: kalibr-amo-report-bot-redis
+    plan: free
+    ipAllowList: []
+    maxmemoryPolicy: noeviction
+
   - type: web
     name: kalibr-amo-report-bot-api
     runtime: docker
+    plan: free
     dockerfilePath: ./Dockerfile
     dockerContext: .
     healthCheckPath: /health/ready
@@ -15,10 +22,69 @@ services:
           type: keyvalue
           name: kalibr-amo-report-bot-redis
           property: connectionString
+      - key: APP_ENV
+        value: production
+      - key: APP_NAME
+        value: Kalibr amoCRM Report Bot
+      - key: APP_VERSION
+        value: 1.0.1
+      - key: TIMEZONE
+        value: Asia/Tashkent
+      - key: LOG_LEVEL
+        value: INFO
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_BOT_USERNAME
+        sync: false
+      - key: TELEGRAM_WEBHOOK_SECRET
+        generateValue: true
+      - key: PUBLIC_BASE_URL
+        sync: false
+      - key: KOMMO_SUBDOMAIN
+        sync: false
+      - key: KOMMO_API_DOMAIN
+        value: amocrm.ru
+      - key: KOMMO_LONG_LIVED_TOKEN
+        sync: false
+      - key: KOMMO_REQUESTS_PER_SECOND
+        value: 6
+      - key: KOMMO_USER_CACHE_SECONDS
+        value: 300
+      - key: KOMMO_WEBHOOK_SECRET
+        generateValue: true
+      - key: INITIAL_IMPORT_DAYS
+        value: 365
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_SESSION_SECRET
+        generateValue: true
+      - key: LINK_TOKEN_MINUTES
+        value: 30
+      - key: PHONE_HASH_SALT
+        generateValue: true
+      - key: SYNC_LOOKBACK_MINUTES
+        value: 15
+      - key: DAILY_OPERATOR_TIME
+        value: "18:30"
+      - key: DAILY_MANAGER_TIME
+        value: "19:00"
+      - key: DAILY_EXECUTIVE_TIME
+        value: "20:00"
+      - key: WEEKLY_REPORT_WEEKDAY
+        value: 0
+      - key: WEEKLY_REPORT_TIME
+        value: "09:00"
+      - key: MONTHLY_REPORT_TIME
+        value: "09:30"
+      - key: DEFAULT_LANGUAGE
+        value: ru
 
   - type: worker
     name: kalibr-amo-report-bot-worker
     runtime: docker
+    plan: starter
     dockerfilePath: ./Dockerfile
     dockerContext: .
     dockerCommand: celery -A kalibr_amo_bot.worker.celery_app worker --loglevel=INFO --concurrency=2
@@ -32,10 +98,69 @@ services:
           type: keyvalue
           name: kalibr-amo-report-bot-redis
           property: connectionString
+      - key: APP_ENV
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: APP_ENV}
+      - key: APP_NAME
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: APP_NAME}
+      - key: APP_VERSION
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: APP_VERSION}
+      - key: TIMEZONE
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: TIMEZONE}
+      - key: LOG_LEVEL
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: LOG_LEVEL}
+      - key: TELEGRAM_BOT_TOKEN
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: TELEGRAM_BOT_TOKEN}
+      - key: TELEGRAM_BOT_USERNAME
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: TELEGRAM_BOT_USERNAME}
+      - key: TELEGRAM_WEBHOOK_SECRET
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: TELEGRAM_WEBHOOK_SECRET}
+      - key: PUBLIC_BASE_URL
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: PUBLIC_BASE_URL}
+      - key: KOMMO_SUBDOMAIN
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: KOMMO_SUBDOMAIN}
+      - key: KOMMO_API_DOMAIN
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: KOMMO_API_DOMAIN}
+      - key: KOMMO_LONG_LIVED_TOKEN
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: KOMMO_LONG_LIVED_TOKEN}
+      - key: KOMMO_REQUESTS_PER_SECOND
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: KOMMO_REQUESTS_PER_SECOND}
+      - key: KOMMO_USER_CACHE_SECONDS
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: KOMMO_USER_CACHE_SECONDS}
+      - key: KOMMO_WEBHOOK_SECRET
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: KOMMO_WEBHOOK_SECRET}
+      - key: INITIAL_IMPORT_DAYS
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: INITIAL_IMPORT_DAYS}
+      - key: ADMIN_USERNAME
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: ADMIN_USERNAME}
+      - key: ADMIN_PASSWORD
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: ADMIN_PASSWORD}
+      - key: ADMIN_SESSION_SECRET
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: ADMIN_SESSION_SECRET}
+      - key: LINK_TOKEN_MINUTES
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: LINK_TOKEN_MINUTES}
+      - key: PHONE_HASH_SALT
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: PHONE_HASH_SALT}
+      - key: SYNC_LOOKBACK_MINUTES
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: SYNC_LOOKBACK_MINUTES}
+      - key: DAILY_OPERATOR_TIME
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: DAILY_OPERATOR_TIME}
+      - key: DAILY_MANAGER_TIME
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: DAILY_MANAGER_TIME}
+      - key: DAILY_EXECUTIVE_TIME
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: DAILY_EXECUTIVE_TIME}
+      - key: WEEKLY_REPORT_WEEKDAY
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: WEEKLY_REPORT_WEEKDAY}
+      - key: WEEKLY_REPORT_TIME
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: WEEKLY_REPORT_TIME}
+      - key: MONTHLY_REPORT_TIME
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: MONTHLY_REPORT_TIME}
+      - key: DEFAULT_LANGUAGE
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: DEFAULT_LANGUAGE}
 
   - type: worker
     name: kalibr-amo-report-bot-scheduler
     runtime: docker
+    plan: starter
     dockerfilePath: ./Dockerfile
     dockerContext: .
     dockerCommand: celery -A kalibr_amo_bot.worker.celery_app beat --loglevel=INFO
@@ -49,9 +174,66 @@ services:
           type: keyvalue
           name: kalibr-amo-report-bot-redis
           property: connectionString
+      - key: APP_ENV
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: APP_ENV}
+      - key: APP_NAME
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: APP_NAME}
+      - key: APP_VERSION
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: APP_VERSION}
+      - key: TIMEZONE
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: TIMEZONE}
+      - key: LOG_LEVEL
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: LOG_LEVEL}
+      - key: TELEGRAM_BOT_TOKEN
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: TELEGRAM_BOT_TOKEN}
+      - key: TELEGRAM_BOT_USERNAME
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: TELEGRAM_BOT_USERNAME}
+      - key: TELEGRAM_WEBHOOK_SECRET
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: TELEGRAM_WEBHOOK_SECRET}
+      - key: PUBLIC_BASE_URL
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: PUBLIC_BASE_URL}
+      - key: KOMMO_SUBDOMAIN
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: KOMMO_SUBDOMAIN}
+      - key: KOMMO_API_DOMAIN
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: KOMMO_API_DOMAIN}
+      - key: KOMMO_LONG_LIVED_TOKEN
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: KOMMO_LONG_LIVED_TOKEN}
+      - key: KOMMO_REQUESTS_PER_SECOND
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: KOMMO_REQUESTS_PER_SECOND}
+      - key: KOMMO_USER_CACHE_SECONDS
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: KOMMO_USER_CACHE_SECONDS}
+      - key: KOMMO_WEBHOOK_SECRET
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: KOMMO_WEBHOOK_SECRET}
+      - key: INITIAL_IMPORT_DAYS
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: INITIAL_IMPORT_DAYS}
+      - key: ADMIN_USERNAME
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: ADMIN_USERNAME}
+      - key: ADMIN_PASSWORD
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: ADMIN_PASSWORD}
+      - key: ADMIN_SESSION_SECRET
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: ADMIN_SESSION_SECRET}
+      - key: LINK_TOKEN_MINUTES
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: LINK_TOKEN_MINUTES}
+      - key: PHONE_HASH_SALT
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: PHONE_HASH_SALT}
+      - key: SYNC_LOOKBACK_MINUTES
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: SYNC_LOOKBACK_MINUTES}
+      - key: DAILY_OPERATOR_TIME
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: DAILY_OPERATOR_TIME}
+      - key: DAILY_MANAGER_TIME
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: DAILY_MANAGER_TIME}
+      - key: DAILY_EXECUTIVE_TIME
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: DAILY_EXECUTIVE_TIME}
+      - key: WEEKLY_REPORT_WEEKDAY
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: WEEKLY_REPORT_WEEKDAY}
+      - key: WEEKLY_REPORT_TIME
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: WEEKLY_REPORT_TIME}
+      - key: MONTHLY_REPORT_TIME
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: MONTHLY_REPORT_TIME}
+      - key: DEFAULT_LANGUAGE
+        fromService: {type: web, name: kalibr-amo-report-bot-api, envVarKey: DEFAULT_LANGUAGE}
 
 databases:
   - name: kalibr-amo-report-bot-db
-    plan: basic-256mb
-
-# Create the Key Value service manually if your Render workspace does not support it in Blueprints.
+    plan: free
+    ipAllowList: []
