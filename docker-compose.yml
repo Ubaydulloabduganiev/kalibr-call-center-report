@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: kalibr_amo_bot
+      POSTGRES_USER: kalibr
+      POSTGRES_PASSWORD: kalibr
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports: ["5433:5432"]
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6380:6379"]
+
+  api:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://kalibr:kalibr@postgres:5432/kalibr_amo_bot
+      REDIS_URL: redis://redis:6379/0
+    ports: ["10001:10000"]
+    depends_on: [postgres, redis]
+
+  worker:
+    build: .
+    command: celery -A kalibr_amo_bot.worker.celery_app worker --loglevel=INFO --concurrency=2
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://kalibr:kalibr@postgres:5432/kalibr_amo_bot
+      REDIS_URL: redis://redis:6379/0
+    depends_on: [postgres, redis]
+
+  scheduler:
+    build: .
+    command: celery -A kalibr_amo_bot.worker.celery_app beat --loglevel=INFO
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://kalibr:kalibr@postgres:5432/kalibr_amo_bot
+      REDIS_URL: redis://redis:6379/0
+    depends_on: [postgres, redis]
+
+volumes:
+  pgdata:

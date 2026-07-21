@@ -1,0 +1,1 @@
+{% extends "base.html" %}{% block content %}<h1>One-time Telegram link</h1><p>User: <b>{{ user.name }}</b></p><p class="link"><a href="{{ link }}">{{ link }}</a></p><p>This link expires and can be used once. Send it privately.</p><a href="/admin/users">Back to users</a>{% endblock %}

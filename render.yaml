@@ -1,0 +1,57 @@
+services:
+  - type: web
+    name: kalibr-amo-report-bot-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health/ready
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kalibr-amo-report-bot-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: kalibr-amo-report-bot-redis
+          property: connectionString
+
+  - type: worker
+    name: kalibr-amo-report-bot-worker
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: celery -A kalibr_amo_bot.worker.celery_app worker --loglevel=INFO --concurrency=2
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kalibr-amo-report-bot-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: kalibr-amo-report-bot-redis
+          property: connectionString
+
+  - type: worker
+    name: kalibr-amo-report-bot-scheduler
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: celery -A kalibr_amo_bot.worker.celery_app beat --loglevel=INFO
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kalibr-amo-report-bot-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: kalibr-amo-report-bot-redis
+          property: connectionString
+
+databases:
+  - name: kalibr-amo-report-bot-db
+    plan: basic-256mb
+
+# Create the Key Value service manually if your Render workspace does not support it in Blueprints.
